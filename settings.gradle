@@ -1,0 +1,6 @@
+rootProject.name = 'monkey-game-server'
+include 'commons'
+include 'proto'
+include 'server'
+include 'gateway'
+

@@ -1,0 +1,15 @@
+server:
+  port: 8081
+  servlet:
+    context-path: gateway
+spring:
+  data:
+    mongodb:
+      host: localhost
+      database: monkey-game
+
+
+monkey:
+  server-infos:
+    - code: hall
+      names: 1

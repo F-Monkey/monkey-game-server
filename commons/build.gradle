@@ -1,0 +1,9 @@
+dependencies {
+    compileOnly "org.springframework:spring-context:${spring}"
+    compileOnly "com.google.guava:guava:${guava}"
+    compileOnly "org.springframework.data:spring-data-redis"
+    compileOnly "io.projectreactor:reactor-core:${reactor}"
+    compileOnly "org.projectlombok:lombok:${lombok}"
+    implementation "com.google.code.gson:gson:${gson}"
+    annotationProcessor "org.projectlombok:lombok:${lombok}"
+}
