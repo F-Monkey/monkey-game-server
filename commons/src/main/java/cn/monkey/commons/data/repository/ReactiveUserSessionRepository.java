@@ -5,4 +5,6 @@ import reactor.core.publisher.Mono;
 
 public interface ReactiveUserSessionRepository {
     Mono<UserSession> findById(String id);
+
+    Mono<Boolean> save(String uid, UserSession session);
 }

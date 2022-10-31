@@ -3,7 +3,6 @@ package cn.monkey.server.netty.session;
 import cn.monkey.commons.bean.Refreshable;
 import cn.monkey.server.Session;
 import cn.monkey.server.SessionFactory;
-import cn.monkey.server.SessionManager;
 import cn.monkey.server.SessionUtil;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -12,7 +11,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class SimpleNettySessionManager implements SessionManager<ChannelHandlerContext>, Refreshable {
+public class SimpleNettySessionManager implements NettSessionManager, Refreshable {
 
     protected final SessionFactory<ChannelHandlerContext> sessionFactory;
     private volatile ConcurrentHashMap<String, Session> sessionMap;

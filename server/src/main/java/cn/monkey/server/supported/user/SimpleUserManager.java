@@ -21,17 +21,15 @@ public class SimpleUserManager implements UserManager, Refreshable {
 
     private final Timer timer;
 
-    private final String serverId;
+    private String serverId;
 
     public SimpleUserManager(Timer timer,
-                             String serverId,
                              UserSessionRepository userSessionRepository,
                              ServerRepository serverRepository) {
         this.userMap = new ConcurrentHashMap<>();
         this.userSessionRepository = userSessionRepository;
         this.serverRepository = serverRepository;
         this.timer = timer;
-        this.serverId = serverId;
     }
 
     @Override
@@ -41,7 +39,8 @@ public class SimpleUserManager implements UserManager, Refreshable {
             if (v == null) {
                 UserSession userSession = this.userSessionRepository.findByToken(k);
                 v = this.wrapper(userSession);
-                this.serverRepository.increaseCurrentUserCount(userSession.getHallServerId());
+                this.serverId = userSession.getHallServerId();
+                this.serverRepository.increaseCurrentUserCount(this.serverId);
                 this.userSessionRepository.save(userSession);
             }
             if (v == null) {
@@ -67,6 +66,9 @@ public class SimpleUserManager implements UserManager, Refreshable {
 
     @Override
     public void refresh() {
+        if (this.userMap.size() == 0) {
+            return;
+        }
         final ConcurrentHashMap<String, User> userMap = this.userMap;
         Iterator<Map.Entry<String, User>> iterator = userMap.entrySet().iterator();
         while (iterator.hasNext()) {
@@ -76,6 +78,8 @@ public class SimpleUserManager implements UserManager, Refreshable {
                 iterator.remove();
             }
         }
-        this.serverRepository.setCurrentUserCount(this.serverId, userMap.size());
+        if (this.serverId != null) {
+            this.serverRepository.setCurrentUserCount(this.serverId, userMap.size());
+        }
     }
 }

@@ -27,4 +27,9 @@ public class ReactiveRedisUserSessionRepository implements ReactiveUserSessionRe
                     return Mono.just(this.gson.fromJson(s, UserSession.class));
                 });
     }
+
+    @Override
+    public Mono<Boolean> save(String uid, UserSession session) {
+        return this.redisTemplate.opsForValue().set(uid, this.gson.toJson(session));
+    }
 }
