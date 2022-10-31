@@ -10,7 +10,7 @@ import java.io.Serializable;
 public class User implements Serializable {
     @Id
     private String id;
-    private String appCode;
+    private String openId;
     private String username;
     private String password;
 }

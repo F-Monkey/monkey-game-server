@@ -7,19 +7,18 @@ import cn.monkey.commons.data.pojo.UserSession;
 import cn.monkey.commons.data.pojo.vo.ResultCode;
 import cn.monkey.commons.data.repository.ReactiveServerRepository;
 import cn.monkey.commons.data.repository.ReactiveUserSessionRepository;
+import cn.monkey.gateway.cache.WechatCache;
 import cn.monkey.gateway.repository.UserRepository;
 import cn.monkey.gateway.util.CommandUtil;
 import cn.monkey.proto.Command;
 import cn.monkey.proto.User;
 import com.google.common.base.Strings;
-import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuples;
 
 import java.util.List;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 @Service
@@ -31,9 +30,13 @@ public class SimpleReactiveUserService implements UserService {
 
     private final ReactiveServerRepository serverRepository;
 
+    private final WechatCache wechatCache;
+
     public SimpleReactiveUserService(UserRepository userRepository,
+                                     WechatCache wechatCache,
                                      ReactiveUserSessionRepository userSessionRepository,
                                      ReactiveServerRepository serverRepository) {
+        this.wechatCache = wechatCache;
         this.userRepository = userRepository;
         this.userSessionRepository = userSessionRepository;
         this.serverRepository = serverRepository;
@@ -88,9 +91,12 @@ public class SimpleReactiveUserService implements UserService {
 
     private Mono<Command.PackageGroup> findOrCreateWxChatUser(User.Login login) {
         String appCode = login.getAppCode();
-        cn.monkey.gateway.data.User user = new cn.monkey.gateway.data.User();
-        user.setAppCode(appCode);
-        return this.userRepository.save(user)
+        return this.wechatCache.getOpenId(appCode)
+                .flatMap(openId -> {
+                    cn.monkey.gateway.data.User user = new cn.monkey.gateway.data.User();
+                    user.setOpenId(openId);
+                    return this.userRepository.save(user);
+                })
                 .map(u -> {
                     User.UserInfo copy = copy(u);
                     return cn.monkey.proto.CommandUtil.packageGroup(cn.monkey.proto.CommandUtil.pkg(ResultCode.OK, null, null, copy.toByteString()));
