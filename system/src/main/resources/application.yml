@@ -1,0 +1,9 @@
+server:
+  port: 8082
+  servlet:
+    context-path: /system
+spring:
+  data:
+    mongodb:
+      host: localhost
+      database: system

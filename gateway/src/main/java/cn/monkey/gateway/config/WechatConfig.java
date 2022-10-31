@@ -1,7 +1,7 @@
 package cn.monkey.gateway.config;
 
 import cn.monkey.gateway.handler.http.SimpleWechatRequestHandler;
-import cn.monkey.gateway.handler.http.WechatRequestHandler;
+import cn.monkey.gateway.handler.WechatRequestHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

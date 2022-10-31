@@ -1,6 +1,6 @@
 package cn.monkey.gateway.cache;
 
-import cn.monkey.gateway.handler.http.WechatRequestHandler;
+import cn.monkey.gateway.handler.WechatRequestHandler;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;

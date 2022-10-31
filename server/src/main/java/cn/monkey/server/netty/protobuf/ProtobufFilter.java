@@ -1,4 +1,4 @@
-package cn.monkey.server.netty.tcp.protobuf;
+package cn.monkey.server.netty.protobuf;
 
 import cn.monkey.proto.Command;
 import cn.monkey.server.Filter;

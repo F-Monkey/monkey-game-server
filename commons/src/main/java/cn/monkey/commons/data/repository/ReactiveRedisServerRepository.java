@@ -3,6 +3,7 @@ package cn.monkey.commons.data.repository;
 import cn.monkey.commons.bean.BeanContext;
 import cn.monkey.commons.data.pojo.ServerConfig;
 import cn.monkey.commons.data.pojo.ServerInfo;
+import com.google.common.collect.Lists;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.data.redis.core.script.RedisScript;
@@ -22,20 +23,31 @@ public class ReactiveRedisServerRepository implements ReactiveServerRepository {
                                          BeanContext<ServerInfo> serverTypesContext) {
         this.redisTemplate = redisTemplate;
         this.serverTypesContext = serverTypesContext;
-        String lua = "local result = {};" +
-                "for i =1, #(KEYS) do" +
-                "result[i] = redis.call('get', KEYS[i]);" +
-                "end" +
+        String lua = "local result = {}; " +
+                "for i =1, #(KEYS) do " +
+                "result[i] = redis.call('get', KEYS[i]); " +
+                "end " +
                 "return result;";
         this.script = new DefaultRedisScript<>(lua, String.class);
+    }
+
+    static ServerConfig createTestServerConfig() {
+        ServerConfig serverConfig = new ServerConfig();
+        serverConfig.setUrl("ws://192.168.88.145:8082/hall");
+        serverConfig.setCurrentUserSize(1);
+        serverConfig.setMaxUserSize(100);
+        return serverConfig;
     }
 
     @Override
     public Mono<List<ServerConfig>> getServerConfig(String type) {
         ServerInfo bean = this.serverTypesContext.getBean(type);
         List<String> names = bean.getNames();
+        return Mono.just(Lists.newArrayList(createTestServerConfig()));
+        /*
         return this.redisTemplate.execute(this.script, names)
-                .map(s -> new ServerConfig())
+                .map(s -> createTestServerConfig())
                 .collectList();
+         */
     }
 }

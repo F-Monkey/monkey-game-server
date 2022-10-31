@@ -3,4 +3,7 @@ include 'commons'
 include 'proto'
 include 'server'
 include 'gateway'
+include 'system'
+include 'hall-server'
+include 'state'
 

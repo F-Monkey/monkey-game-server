@@ -14,6 +14,8 @@ import cn.monkey.proto.Command;
 import cn.monkey.proto.User;
 import com.google.common.base.Strings;
 import com.google.protobuf.InvalidProtocolBufferException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuples;
@@ -23,6 +25,8 @@ import java.util.function.Predicate;
 
 @Service
 public class SimpleReactiveUserService implements UserService {
+
+    private static final Logger log = LoggerFactory.getLogger(SimpleReactiveUserService.class);
 
     private final UserRepository userRepository;
 
@@ -80,13 +84,16 @@ public class SimpleReactiveUserService implements UserService {
             } catch (InvalidProtocolBufferException e) {
                 return Mono.error(e);
             }
-        }).flatMap(login -> {
-            String appCode = login.getAppCode();
-            if (Strings.isNullOrEmpty(appCode)) {
-                return Mono.error(new IllegalArgumentException("empty appCode"));
-            }
-            return this.findOrCreateWxChatUser(login);
-        }).onErrorResume(e -> Mono.just(cn.monkey.proto.CommandUtil.error(ResultCode.ERROR, e)));
+        })
+                .flatMap(login -> {
+                    String appCode = login.getAppCode();
+                    if (Strings.isNullOrEmpty(appCode)) {
+                        return Mono.error(new IllegalArgumentException("empty appCode"));
+                    }
+                    return this.findOrCreateWxChatUser(login);
+                })
+                .doOnError(e -> log.error("#wxSignIn error:\n", e))
+                .onErrorResume(e -> Mono.just(cn.monkey.proto.CommandUtil.error(ResultCode.ERROR, e)));
     }
 
     private Mono<Command.PackageGroup> findOrCreateWxChatUser(User.Login login) {
@@ -97,10 +104,21 @@ public class SimpleReactiveUserService implements UserService {
                     user.setOpenId(openId);
                     return this.userRepository.save(user);
                 })
-                .map(u -> {
-                    User.UserInfo copy = copy(u);
+                .flatMap(this::findBestHallServer)
+                .map(userSession -> {
+                    User.Session copy = copy(userSession);
                     return cn.monkey.proto.CommandUtil.packageGroup(cn.monkey.proto.CommandUtil.pkg(ResultCode.OK, null, null, copy.toByteString()));
                 });
+    }
+
+    static User.Session copy(UserSession userSession) {
+        User.Session.Builder builder = User.Session.newBuilder();
+        builder.setHallServer(userSession.getHallServerUrl());
+        User.UserInfo.Builder userInfoBuilder = User.UserInfo.newBuilder();
+        userInfoBuilder.setUid(userSession.getUid());
+        builder.setUser(userInfoBuilder.build());
+        builder.setToken(userSession.getUid());
+        return builder.build();
     }
 
     static User.UserInfo copy(cn.monkey.gateway.data.User user) {
