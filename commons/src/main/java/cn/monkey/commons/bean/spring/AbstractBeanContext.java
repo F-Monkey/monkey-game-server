@@ -24,14 +24,7 @@ public abstract class AbstractBeanContext<T> implements BeanContext<T>, Applicat
 
     @SuppressWarnings("unchecked")
     public AbstractBeanContext() {
-        Type[] actualType = ClassUtil.getActualType(this.getClass());
-        if (actualType.length == 0) {
-            throw new IllegalArgumentException("empty generate types");
-        }
-        if (actualType.length > 1) {
-            throw new IllegalArgumentException("duplicated generate types");
-        }
-        this.type = (Class<T>) actualType[0];
+        this.type = (Class<T>) ClassUtil.getActualType(this, AbstractBeanContext.class, "T");
         this.beanMap = ImmutableMap.of();
     }
 

@@ -54,6 +54,11 @@ public class SimpleUserManager implements UserManager, Refreshable {
         return user;
     }
 
+    @Override
+    public User find(String uid) {
+        return this.userMap.get(uid);
+    }
+
     protected User wrapper(UserSession userSession) {
         if (null == userSession) {
             return null;

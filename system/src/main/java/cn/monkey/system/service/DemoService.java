@@ -4,6 +4,8 @@ import cn.monkey.commons.data.pojo.vo.Result;
 import cn.monkey.commons.data.pojo.vo.Results;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.util.IOUtils;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
@@ -23,7 +25,7 @@ public class DemoService implements IDemoService, IFileService {
     private static final String EXCEL_REGEX = "^.+\\.(?i)((xls)|(xlsx))$";
 
     static boolean isExcel(String filename) {
-        return filename.matches(EXCEL_REGEX);
+        return filename.endsWith("xls") || filename.endsWith("xlsx");
     }
 
     protected final MongoTemplate mongoTemplate;
@@ -38,41 +40,37 @@ public class DemoService implements IDemoService, IFileService {
         if (file == null) {
             throw new NullPointerException("file: [upload] is not exists");
         }
-        if (isExcel(file.getName())) {
+        String filename = file.getOriginalFilename();
+        if (isExcel(Objects.requireNonNull(filename))) {
             String collectionName = request.getParameter("collectionName");
-            return this.decodeAndSaveExcel(collectionName, file);
+
+            return this.decodeAndSaveExcel(collectionName, file, filename);
         }
         return Results.ok();
     }
 
-    private Result<?> decodeAndSaveExcel(String collectionName, MultipartFile file) throws IOException {
-        InputStream inputStream = file.getInputStream();
-        String name = file.getName();
-        Workbook workbook;
-        if (name.endsWith("xls")) {
-            workbook = new HSSFWorkbook(inputStream);
-        } else if (name.endsWith("xlsx")) {
-            workbook = new XSSFWorkbook(inputStream);
-        } else {
-            throw new IllegalArgumentException("invalid file");
+    private Result<?> decodeAndSaveExcel(String collectionName, MultipartFile file, String fileName) throws IOException {
+        try (InputStream inputStream = file.getInputStream()) {
+            IOUtils.setMaxByteArrayInitSize(1 << 10);
+            Workbook workbook = WorkbookFactory.create(inputStream);
+            Sheet sheetAt = workbook.getSheetAt(0);
+            int lastRowNum = sheetAt.getLastRowNum();
+            List<String> head = this.readData(sheetAt.getRow(0));
+            List<Map<String, String>> collect = IntStream.range(1, lastRowNum)
+                    .mapToObj(i -> {
+                        Row row = sheetAt.getRow(i);
+                        return readData(row);
+                    })
+                    .map(data -> {
+                        Map<String, String> map = new HashMap<>(data.size());
+                        for (int i = 0; i < head.size(); i++) {
+                            map.put(head.get(i), data.get(i));
+                        }
+                        return map;
+                    }).collect(Collectors.toList());
+            this.mongoTemplate.insert(collect, collectionName);
         }
-        Sheet sheetAt = workbook.getSheetAt(0);
-        int lastRowNum = sheetAt.getLastRowNum();
-        List<String> head = this.readData(sheetAt.getRow(0));
-        List<Map<String, String>> collect = IntStream.range(1, lastRowNum)
-                .mapToObj(i -> {
-                    Row row = sheetAt.getRow(i);
-                    return readData(row);
-                })
-                .map(data -> {
-                    Map<String, String> map = new HashMap<>(data.size());
-                    for (int i = 0; i < head.size(); i++) {
-                        map.put(head.get(i), data.get(i));
-                    }
-                    return map;
-                }).collect(Collectors.toList());
-        this.mongoTemplate.insert(collect, collectionName);
-        return Results.ok(collect);
+        return Results.ok();
     }
 
     private List<String> readData(Row head) {

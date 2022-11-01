@@ -6,4 +6,7 @@ public interface HallCmdType {
 
     int CHOOSE_GAME_SERVER = 1002;
     int CHOOSE_GAME_SERVER_RESULT = 1003;
+
+    int ENTER_CHAT_ROOM = 1004;
+    int ENTER_CHAT_ROOM_RESULT = 1005;
 }

@@ -95,8 +95,8 @@ public class SimpleSchedulerManager implements SchedulerManager, Countable, Refr
 
 
     @Override
-    public void addEvent(String groupId, Object event) {
-        this.findEventPublisherScheduler(groupId).publish(() -> this.findBestGroupScheduler2AddStateGroup(groupId, event));
+    public void addEvent(String groupId, Object event, Object... args) {
+        this.findEventPublisherScheduler(groupId).publish(() -> this.findBestGroupScheduler2AddStateGroup(groupId, event, args));
     }
 
     @Override

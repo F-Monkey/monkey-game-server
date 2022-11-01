@@ -4,4 +4,6 @@ import cn.monkey.server.Session;
 
 public interface UserManager {
     User findOrCreate(Session session, String token);
+
+    User find(String uid);
 }

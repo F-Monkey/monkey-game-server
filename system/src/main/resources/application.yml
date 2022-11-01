@@ -1,8 +1,12 @@
 server:
-  port: 8082
+  port: 8084
   servlet:
     context-path: /system
 spring:
+  servlet:
+    multipart:
+      max-file-size: 1024MB
+      max-request-size: 1024MB
   data:
     mongodb:
       host: localhost
