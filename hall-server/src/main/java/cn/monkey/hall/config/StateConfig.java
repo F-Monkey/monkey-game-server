@@ -4,6 +4,7 @@ import cn.monkey.commons.data.repository.RedisServerRepository;
 import cn.monkey.commons.data.repository.ServerRepository;
 import cn.monkey.commons.utils.Timer;
 import cn.monkey.hall.state.HallServerStateGroupFactory;
+import cn.monkey.server.supported.user.UserManager;
 import cn.monkey.state.core.SimpleStateGroupPool;
 import cn.monkey.state.core.StateGroupFactory;
 import cn.monkey.state.core.StateGroupPool;
@@ -28,8 +29,9 @@ public class StateConfig {
 
     @Bean
     StateGroupFactory stateGroupFactory(Timer timer,
-                                        ServerRepository serverRepository) {
-        return new HallServerStateGroupFactory(timer, serverRepository);
+                                        ServerRepository serverRepository,
+                                        UserManager userManager) {
+        return new HallServerStateGroupFactory(timer, serverRepository, userManager);
     }
 
     @Bean

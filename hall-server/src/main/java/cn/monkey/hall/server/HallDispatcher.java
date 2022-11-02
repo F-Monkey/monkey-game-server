@@ -20,6 +20,8 @@ import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 import reactor.util.function.Tuples;
 
+import java.util.Collection;
+
 @Component
 public class HallDispatcher implements ProtobufDispatcher {
 
@@ -129,9 +131,17 @@ public class HallDispatcher implements ProtobufDispatcher {
                         return Mono.error(e);
                     }
                 })
-                .doOnNext(user -> session.setAttribute(USER_KEY, user))
+                .doOnNext(user -> {
+                    session.setAttribute(USER_KEY, user);
+                    Collection<User> all = this.userManager.findAll();
+
+                    // TODO
+                    session.write(new Object());
+                })
                 .doOnError(e -> session.write(HallCmdUtil.error(e)))
                 .subscribeOn(this.loginScheduler)
                 .subscribe();
     }
+
+
 }

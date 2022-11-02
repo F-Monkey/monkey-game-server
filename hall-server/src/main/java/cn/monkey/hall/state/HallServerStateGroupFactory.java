@@ -4,6 +4,7 @@ import cn.monkey.commons.utils.Timer;
 import cn.monkey.commons.data.repository.ServerRepository;
 import cn.monkey.proto.Command;
 import cn.monkey.server.supported.user.User;
+import cn.monkey.server.supported.user.UserManager;
 import cn.monkey.state.core.SimpleStateGroup;
 import cn.monkey.state.core.SimpleStateGroupFactory;
 import cn.monkey.state.core.StateGroup;
@@ -13,10 +14,14 @@ public class HallServerStateGroupFactory extends SimpleStateGroupFactory {
 
     private final ServerRepository roomServerRepository;
 
+    private final UserManager userManager;
+
     public HallServerStateGroupFactory(Timer timer,
-                                       ServerRepository roomServerRepository) {
+                                       ServerRepository roomServerRepository,
+                                       UserManager userManager) {
         super(timer);
         this.roomServerRepository = roomServerRepository;
+        this.userManager = userManager;
     }
 
     @Override
@@ -44,10 +49,10 @@ public class HallServerStateGroupFactory extends SimpleStateGroupFactory {
      * @return
      */
     private StateGroup createChatGroup(String id, User user) {
-        HallServerContext hallServerContext = new HallServerContext(this.roomServerRepository);
-        SimpleStateGroup stateGroup = new SimpleStateGroup(id, hallServerContext, this.timer, true);
-        ChatState serverState = new ChatState(super.timer, stateGroup);
-        stateGroup.addState(serverState);
+        ChatServerContext chatServerContext = new ChatServerContext(this.userManager);
+        SimpleStateGroup stateGroup = new SimpleStateGroup(id, chatServerContext, this.timer, true);
+        ChatState chatState = new ChatState(super.timer, stateGroup);
+        stateGroup.addState(chatState);
         stateGroup.setStartState(ChatState.CODE);
         stateGroup.addEvent(Tuples.of(user, buildEnterEvent()));
         return stateGroup;
