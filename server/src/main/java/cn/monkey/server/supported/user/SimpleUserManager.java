@@ -7,6 +7,7 @@ import cn.monkey.commons.data.repository.ServerRepository;
 import cn.monkey.commons.data.repository.UserSessionRepository;
 import cn.monkey.server.Session;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -59,11 +60,16 @@ public class SimpleUserManager implements UserManager, Refreshable {
         return this.userMap.get(uid);
     }
 
+    @Override
+    public Collection<User> findAll() {
+        return this.userMap.values();
+    }
+
     protected User wrapper(UserSession userSession) {
         if (null == userSession) {
             return null;
         }
-        SimpleUser simpleUser = new SimpleUser(userSession.getUid());
+        SimpleUser simpleUser = new SimpleUser(userSession.getUid(), userSession.getUsername());
         simpleUser.setMaxActiveInterval(60 * 1000);
         simpleUser.setTimer(this.timer);
         return simpleUser;

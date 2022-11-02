@@ -7,15 +7,19 @@ public class SimpleUser implements User {
 
     private final String uid;
 
+    private final String username;
+
     private Session session;
 
     private Timer timer;
 
     private volatile long lastOperationTime;
+
     private long maxActiveInterval;
 
-    public SimpleUser(String uid) {
+    public SimpleUser(String uid, String username) {
         this.uid = uid;
+        this.username = username;
     }
 
     @Override
@@ -48,7 +52,7 @@ public class SimpleUser implements User {
         this.lastOperationTime = this.timer.getCurrentTimeMs();
     }
 
-    public void setMaxActiveInterval(long maxActiveInterval){
+    public void setMaxActiveInterval(long maxActiveInterval) {
         this.maxActiveInterval = maxActiveInterval;
     }
 
