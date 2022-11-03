@@ -16,7 +16,7 @@ public interface IFileService {
         throw new UnsupportedOperationException();
     }
 
-    default void download(HttpServletRequest request, HttpServletResponse response) {
+    default void download(HttpServletRequest request, HttpServletResponse response) throws IOException {
         throw new UnsupportedOperationException();
     }
 }

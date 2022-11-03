@@ -48,6 +48,7 @@ public class ProtoBufWebSocketChannelHandler extends SimpleChannelInboundHandler
             log.error("data parse error:\n", e);
             return;
         }
+        log.info("cmd Type: {}", pkg.getCmdType());
         Session session = this.sessionManager.findOrCreate(ctx);
         if (this.filters != null && filters.size() > 0) {
             for (Filter<Command.Package> f : this.filters) {

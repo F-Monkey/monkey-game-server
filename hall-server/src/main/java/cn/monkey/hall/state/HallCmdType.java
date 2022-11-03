@@ -12,4 +12,7 @@ public interface HallCmdType {
 
     int SHOW_USER_LIST = 1006;
     int SHOW_USER_LIST_RESULT = 1007;
+
+    int CHAT = 1008;
+    int CHAT_RESULT = 1009;
 }

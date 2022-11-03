@@ -7,6 +7,7 @@ import cn.monkey.server.netty.session.NettSessionManager;
 import cn.monkey.server.netty.session.SimpleNettySessionManager;
 import cn.monkey.server.netty.tcp.NettyWebSocketServer;
 import cn.monkey.server.netty.tcp.ProtoBufWebSocketChannelHandler;
+import cn.monkey.server.netty.tcp.TextWebSocketChannelHandler;
 import org.springframework.beans.BeansException;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -39,8 +40,9 @@ public class NettyServerRunner implements ApplicationContextAware, ApplicationRu
         ProtobufDispatcher dispatcher = this.applicationContext.getBean(ProtobufDispatcher.class);
         NettSessionManager sessionManager = this.applicationContext.getBean(NettSessionManager.class);
         ProtoBufWebSocketChannelHandler protoBufWebSocketChannelHandler = new ProtoBufWebSocketChannelHandler(sessionManager, filters, dispatcher);
-        final int port = 8082;
-        NettyWebSocketServer nettyWebSocketServer = new NettyWebSocketServer(protoBufWebSocketChannelHandler, "hall", port, 2, 4);
+        //TextWebSocketChannelHandler textWebSocketChannelHandler = new TextWebSocketChannelHandler();
+        final int port = 8111;
+        NettyWebSocketServer nettyWebSocketServer = new NettyWebSocketServer(protoBufWebSocketChannelHandler, "/hall", port, 2, 4);
         nettyWebSocketServer.start();
 
     }

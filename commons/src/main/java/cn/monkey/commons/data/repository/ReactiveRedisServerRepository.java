@@ -33,7 +33,7 @@ public class ReactiveRedisServerRepository implements ReactiveServerRepository {
 
     static ServerConfig createTestServerConfig() {
         ServerConfig serverConfig = new ServerConfig();
-        serverConfig.setUrl("ws://192.168.88.145:8082/hall");
+        serverConfig.setUrl("ws://192.168.88.145:8111/hall");
         serverConfig.setId("hall_1");
         serverConfig.setCurrentUserSize(1);
         serverConfig.setMaxUserSize(100);

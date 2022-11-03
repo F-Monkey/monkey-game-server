@@ -1,5 +1,5 @@
 server:
-  port: 8084
+  port: 8082
   servlet:
     context-path: /system
 spring:
@@ -10,4 +10,4 @@ spring:
   data:
     mongodb:
       host: localhost
-      database: system
+      database: m_system

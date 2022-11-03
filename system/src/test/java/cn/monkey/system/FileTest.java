@@ -12,7 +12,7 @@ import java.io.IOException;
 public class FileTest {
     public static void createExcel() throws IOException {
         File file = new File("/home/monkey/Desktop/test.xlsx");
-        SXSSFWorkbook hssfWorkbook = new SXSSFWorkbook();
+        SXSSFWorkbook hssfWorkbook = new SXSSFWorkbook(100000);
         SXSSFSheet sheet = hssfWorkbook.createSheet("test");
         SXSSFRow head = sheet.createRow(0);
         FileOutputStream fileOutputStream = new FileOutputStream(file);
@@ -26,6 +26,7 @@ public class FileTest {
                 SXSSFCell cell = row.createCell(j);
                 cell.setCellValue(String.valueOf(i));
             }
+            sheet.flushRows();
         }
         hssfWorkbook.write(fileOutputStream);
         hssfWorkbook.close();
