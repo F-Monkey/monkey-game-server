@@ -42,7 +42,6 @@ public class SimpleUserManager implements UserManager, Refreshable {
                 v = this.wrapper(userSession);
                 this.serverId = userSession.getHallServerId();
                 this.serverRepository.increaseCurrentUserCount(this.serverId);
-                this.userSessionRepository.save(userSession);
             }
             if (v == null) {
                 throw new IllegalArgumentException("can not find userSession by token: " + k);

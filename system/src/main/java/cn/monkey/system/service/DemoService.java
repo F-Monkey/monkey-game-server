@@ -54,12 +54,12 @@ public class DemoService implements IDemoService, IFileService {
         if (isExcel(Objects.requireNonNull(filename))) {
             String collectionName = request.getParameter("collectionName");
 
-            return this.decodeAndSaveExcel(collectionName, file, filename);
+            return this.decodeAndSaveExcel(collectionName, file);
         }
         return Results.ok();
     }
 
-    private Result<?> decodeAndSaveExcel(String collectionName, MultipartFile file, String fileName) throws IOException {
+    private Result<?> decodeAndSaveExcel(String collectionName, MultipartFile file) throws IOException {
         try (InputStream inputStream = file.getInputStream()) {
             Workbook workbook = StreamingReader.builder()
                     .rowCacheSize(100)

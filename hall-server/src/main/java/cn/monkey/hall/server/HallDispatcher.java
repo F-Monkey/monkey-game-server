@@ -1,5 +1,6 @@
 package cn.monkey.hall.server;
 
+import cn.monkey.commons.data.pojo.vo.ResultCode;
 import cn.monkey.hall.state.HallCmdType;
 import cn.monkey.hall.state.HallCmdUtil;
 import cn.monkey.proto.Chat;
@@ -27,7 +28,7 @@ public class HallDispatcher implements ProtobufDispatcher {
 
     private static final Logger log = LoggerFactory.getLogger(HallDispatcher.class);
 
-    private final String USER_KEY = "user";
+    private final String USER_KEY = "monkey_user";
 
     private final UserManager userManager;
 
@@ -40,7 +41,6 @@ public class HallDispatcher implements ProtobufDispatcher {
     public HallDispatcher(UserManager userManager,
                           SchedulerManager schedulerManager) {
         this.userManager = userManager;
-
         this.schedulerManager = schedulerManager;
         this.loginScheduler = Schedulers.newParallel("login", 3);
         this.chooseGameScheduler = Schedulers.newParallel("choose_game", 2);
@@ -55,6 +55,9 @@ public class HallDispatcher implements ProtobufDispatcher {
                 return;
             case HallCmdType.CHOOSE_GAME_SERVER:
                 this.chooseGameServer(session, pkg);
+                return;
+            case HallCmdType.SHOW_USER_LIST:
+                this.getUserList(session, pkg);
                 return;
             case HallCmdType.ENTER_CHAT_ROOM:
                 this.findInvitedUser2Enter(session, pkg);
@@ -84,7 +87,7 @@ public class HallDispatcher implements ProtobufDispatcher {
                     return Mono.just(Tuples.of(groupId, user));
                 })
                 .map(t -> {
-                    User user = session.getAttribute(USER_KEY);
+                    User user = (User) session.getAttribute(USER_KEY);
                     if (user == null) {
                         throw new UnsupportedOperationException("user has not login yet");
                     }
@@ -109,7 +112,7 @@ public class HallDispatcher implements ProtobufDispatcher {
                     return groupId;
                 })
                 .map(s -> {
-                    User user = session.getAttribute(USER_KEY);
+                    User user = (User) session.getAttribute(USER_KEY);
                     if (user == null) {
                         throw new UnsupportedOperationException("user has not login yet");
                     }
@@ -133,15 +136,32 @@ public class HallDispatcher implements ProtobufDispatcher {
                 })
                 .doOnNext(user -> {
                     session.setAttribute(USER_KEY, user);
-                    Collection<User> all = this.userManager.findAll();
-
-                    // TODO
-                    session.write(new Object());
+                    session.write(HallCmdUtil.loginResult(ResultCode.OK));
                 })
                 .doOnError(e -> session.write(HallCmdUtil.error(e)))
                 .subscribeOn(this.loginScheduler)
                 .subscribe();
     }
 
+    private void getUserList(Session session, Command.Package pkg) {
+        Mono.just(pkg)
+                .flatMap(p -> {
+                    User user = (User) session.getAttribute(USER_KEY);
+                    if (user == null) {
+                        return Mono.error(new UnsupportedOperationException("you are not login yet"));
+                    }
+                    Collection<User> all = this.userManager.findAll();
+                    all.removeIf(u -> u.getUid().equals(user.getUid()));
+                    return Mono.just(HallCmdUtil.getUserList(ResultCode.OK, null, all));
+                })
+                .doOnNext(session::write)
+                .doOnError(e -> {
+                    log.error("get userList error:\n", e);
+                    session.write(HallCmdUtil.error(e));
+                })
+                .subscribeOn(this.loginScheduler)
+                .subscribe();
+
+    }
 
 }

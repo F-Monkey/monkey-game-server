@@ -11,13 +11,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class SimpleNettySession implements Session {
     protected final Logger log = LoggerFactory.getLogger(this.getClass());
     protected final ChannelHandlerContext ctx;
+    private final ConcurrentMap<String, AttributeKey<Object>> keyMap;
 
     public SimpleNettySession(ChannelHandlerContext ctx) {
         this.ctx = ctx;
+        this.keyMap = new ConcurrentHashMap<>();
     }
 
     @Override
@@ -26,14 +30,22 @@ public class SimpleNettySession implements Session {
     }
 
     @Override
-    public <T> T setAttribute(String key, T val) {
-        AttributeKey<T> attributeKey = AttributeKey.newInstance(key);
-        return this.ctx.channel().attr(attributeKey).getAndSet(val);
+    public Object setAttribute(String key, Object val) {
+        AttributeKey<Object> attrKey = this.keyMap.compute(key, (k, v) -> {
+            if (v == null) {
+                v = AttributeKey.newInstance(k);
+            }
+            return v;
+        });
+        return this.ctx.channel().attr(attrKey).getAndSet(val);
     }
 
     @Override
-    public <T> T getAttribute(String key) {
-        AttributeKey<T> attributeKey = AttributeKey.newInstance(key);
+    public Object getAttribute(String key) {
+        AttributeKey<Object> attributeKey = this.keyMap.get(key);
+        if (attributeKey == null) {
+            throw new IllegalArgumentException("key:" + key + " is not exists");
+        }
         return this.ctx.channel().attr(attributeKey).get();
     }
 

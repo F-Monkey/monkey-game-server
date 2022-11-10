@@ -105,9 +105,13 @@ public class SimpleReactiveUserService implements UserService {
                     return this.userRepository.save(user);
                 })
                 .flatMap(this::findBestHallServer)
-                .doOnNext(userSession -> this.userSessionRepository.save(userSession.getUid(), userSession))
-                .map(userSession -> {
-                    User.Session copy = copy(userSession);
+                .flatMap(userSession -> {
+                    Mono<Boolean> save = this.userSessionRepository.save(userSession.getUid(), userSession);
+                    return save.map(b -> Tuples.of(b, userSession));
+                })
+                .map(t -> {
+                    log.info("session save result: {}", t.getT1());
+                    User.Session copy = copy(t.getT2());
                     return cn.monkey.proto.CommandUtil.packageGroup(cn.monkey.proto.CommandUtil.pkg(ResultCode.OK, null, null, copy.toByteString()));
                 });
     }

@@ -48,7 +48,6 @@ public class NettyWebSocketServer implements Server {
     public void start() {
         this.bootstrap.group(this.bossGroup, this.workerGroup)
                 .childOption(ChannelOption.SO_KEEPALIVE, true)
-                .childOption(ChannelOption.SO_BACKLOG, 1024)
                 .channel(NioServerSocketChannel.class)
                 .handler(new LoggingHandler(LogLevel.INFO))
                 .childHandler(new ChannelInitializer<NioSocketChannel>() {
@@ -57,7 +56,7 @@ public class NettyWebSocketServer implements Server {
                         ChannelPipeline pipeline = ch.pipeline();
                         pipeline.addLast(new HttpServerCodec());
                         pipeline.addLast(new HttpObjectAggregator(65536));
-                        pipeline.addLast(new WebSocketServerProtocolHandler(protocol, null,
+                        pipeline.addLast(new WebSocketServerProtocolHandler(protocol, protocol,
                                 true, 65336 * 10));
                         pipeline.addLast(customerHandler);
                     }

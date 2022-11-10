@@ -7,7 +7,8 @@ spring:
     mongodb:
       host: localhost
       database: monkey-game
-
+    redis:
+      database: 0
 
 monkey:
   server-infos:
